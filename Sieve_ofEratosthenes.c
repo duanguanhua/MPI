@@ -1,7 +1,6 @@
 #include "mpi.h"
 #include <math.h>
 #include <stdio.h>
-// #include "MyMPI.h"
 #define MIN(a,b)  ((a)<(b)?(a):(b))
 
 int main (int argc, char *argv[])
@@ -39,9 +38,9 @@ int main (int argc, char *argv[])
 
    n = atoi(argv[1]);
    m=n;//
-   n=(n%2==0)?(n/2-1):((n-1)/2);//??????n??????????????????1
+   n=(n%2==0)?(n/2-1):((n-1)/2);//将输入的整数n转换为存储奇数的数组大小，不包括奇数1
    //if (!id) printf ("Number of odd integers:%d    Maximum value of odd integers:%d\n",n+1,3+2*(n-1));
-   if (n==0) {//??2????1 prime???
+   if (n==0) {//输入2时，输出1 prime，结束
     if (!id) printf ("There are 1 prime less than or equal to %d\n",m);
       MPI_Finalize();
       exit (1);
@@ -50,9 +49,9 @@ int main (int argc, char *argv[])
       well as the integers represented by the first and
       last array elements */
 
-   low_value = 3 + 2*(id*(n)/p);//???????
-   high_value = 3 + 2*((id+1)*(n)/p-1);//????????
-   size = (high_value - low_value)/2 + 1;    //?????????
+   low_value = 3 + 2*(id*(n)/p);//进程的第一个数
+   high_value = 3 + 2*((id+1)*(n)/p-1);//进程的最后一个数
+   size = (high_value - low_value)/2 + 1;    //进程处理的数组大小
 
 
    /* Bail out if all the primes used for sieving are
@@ -78,9 +77,9 @@ int main (int argc, char *argv[])
 
    for (i = 0; i < size; i++) marked[i] = 0;
    if (!id) index = 0;
-   prime = 3;//???3??
+   prime = 3;//从素数3开始
    do {
-    //?????????????
+    //确定奇数的第一个倍数的下标
       if (prime * prime > low_value)
          first = (prime * prime - low_value)/2;
       else {
@@ -93,7 +92,7 @@ int main (int argc, char *argv[])
       for (i = first; i < size; i += prime)  marked[i] = 1;
       if (!id) {
          while (marked[++index]);
-         prime = 2*index + 3;//??????????
+         prime = 2*index + 3;//下一个未被标记的素数
         }
       if (p > 1) MPI_Bcast (&prime,  1, MPI_INT, 0, MPI_COMM_WORLD);
    } while (prime * prime <= 3+2*(n-1));//
@@ -113,7 +112,7 @@ int main (int argc, char *argv[])
 
    if (!id) {
       printf ("There are %d primes less than or equal to %d\n",
-         global_count+1, m);//????????3??????????2?????????1
+         global_count+1, m);//前面程序是从素数3开始标记，忽略了素数2，所以素数个数要加1
       printf ("SIEVE (%d) %10.6f\n", p, elapsed_time);
    }
    MPI_Finalize ();
